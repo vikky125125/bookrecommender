@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+	<meta name="description" content="" />
+	<meta name="author" content="" />
+	<title>Book Recommender</title>
+
+	<script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" />
+	<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/jquery-ui.min.js') }}"></script>
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery-ui.min.css') }}" />
+
+	<style type="text/css">
+		* {
+		  margin: 0;
+		  padding: 0;
+		  list-style: none;
+		  vertical-align: baseline;
+		}
+
+		div {
+		  position: relative;
+		  z-index: 2;
+		}
+
+		body {
+		  background-color: #333;
+		  color: #333;
+		  font-family: 'Raleway', sans-serif;
+		  font-weight: 400;
+		}
+
+		.quote-box {
+		  border-radius: 10px;
+		  position: relative;
+		  margin: 8% auto auto auto;
+		  width: 70vw;
+		  max-width: 70vw;
+		  padding: 40px 35px;
+		  display: table;
+		  background-color: #fff;
+		}
+	</style>
+</head>
+<body>
+	<div class="quote-box">
+		<h2 style="font-weight: 100;">Book Recommender</h2>
+		<form id="bookForm">
+			<div class="form-group">
+				<label for="autocomplete">Book title</label>
+				<input type="text" class="form-control" id="bookTitle" autocomplete="off" placeholder="Search by title..." />
+			</div>
+			<button type="submit" class="btn btn-primary">Recommend</button>
+		</form>
+
+		<br/><br/>
+		<label>Recommendations</label>
+		<div id="bookResults"></div>
+	</div>
+
+	<script type="text/javascript">
+		$(function() {
+			$('#bookTitle').autocomplete({
+				source: function(req, res) {
+					$.getJSON("{{url_for('autocomplete')}}", {
+						q: req.term,
+					}, function(data) {
+						res(data.matching_results);
+					});
+				},
+				minLength: 2,
+				select: function(evt, ui) {
+					console.log(ui.item.value);
+				}
+			});
+
+			$('#bookForm').submit(function(e) {
+				e.preventDefault();
+
+				const searchText = $('#bookTitle').val();
+				$.ajax({
+					url: '/recommend',
+					type: 'get',
+					data: {jsdata: searchText},
+					success: function(res) {
+						// alert('Success: ' + res)
+						$('#bookResults').html(res);
+					},
+					error: function(err) {
+						alert('Error: ' + err);
+					}
+				});
+			});
+		});
+	</script>
+</body>
+</html>
